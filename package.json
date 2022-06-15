@@ -2,7 +2,6 @@
   "name": "fcc-d3-scatter-plot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "dependencies": {
     "d3": "^7.4.4"
   },
@@ -10,7 +9,8 @@
     "parcel": "^2.6.0"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "start": "parcel watch index.html",
+    "build": "parcel build index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
