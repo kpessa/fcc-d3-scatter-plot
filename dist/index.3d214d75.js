@@ -142,11 +142,11 @@
       this[globalName] = mainExports;
     }
   }
-})({"g5G0b":[function(require,module,exports) {
+})({"dB9nQ":[function(require,module,exports) {
 "use strict";
 var global = arguments[3];
 var HMR_HOST = null;
-var HMR_PORT = 1234;
+var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
 module.bundle.HMR_BUNDLE_ID = "0a8ecb283d214d75";
@@ -507,16 +507,11 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _d3 = require("d3");
 var _d3Default = parcelHelpers.interopDefault(_d3);
 var _chartSetup = require("./chartSetup");
-const { margin , svg , chart , width , height  } = (0, _chartSetup.chartSetup)();
+const { margin , svg , graph , chart , width , height  } = (0, _chartSetup.chartSetup)();
 fetch("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json").then((response)=>response.json()).then((data)=>{
     console.log(data);
     const { xScale , yScale , parseTimeYear , parseTimeTime  } = (0, _chartSetup.addAxes)(chart, data, width, height);
-    const graph = chart.append("g").attr("id", "graph");
-    graph.append("circle").attr("cx", 50).attr("cy", 50).attr("r", 10).attr("fill", "red");
-    graph.selectAll("circle").data(data).join("circle").attr("cx", (d)=>xScale(parseTimeYear(d.Year))).attr("cy", (d)=>yScale(parseTimeTime(d.Time))).attr("r", 5).attr("stroke", "black").attr("fill", (d)=>{
-        if (d.Doping !== "") return "#1f77b4";
-        return "#ff7f0e";
-    });
+    graph.call((0, _chartSetup.plotData), data, xScale, yScale, parseTimeYear, parseTimeTime);
 }).catch((error)=>console.log(error));
 
 },{"d3":"17XFv","./chartSetup":"cswri","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"17XFv":[function(require,module,exports) {
@@ -23785,10 +23780,12 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "chartSetup", ()=>chartSetup);
 parcelHelpers.export(exports, "addAxes", ()=>addAxes);
+parcelHelpers.export(exports, "plotData", ()=>plotData);
 var _d3 = require("d3");
+var _d3Default = parcelHelpers.interopDefault(_d3);
 function chartSetup() {
     const margin = {
-        top: 20,
+        top: 100,
         right: 20,
         bottom: 30,
         left: 100
@@ -23796,13 +23793,30 @@ function chartSetup() {
     const containerHeight = 500;
     const containerWidth = 900;
     let svg = (0, _d3.select)("svg").attr("width", containerWidth).attr("height", containerHeight);
-    let chart = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+    let chart = svg.append("g").attr("id", "chart").attr("transform", `translate(${margin.left}, ${margin.top})`);
+    const graph = chart.append("g").attr("id", "graph");
     const width = containerWidth - margin.left - margin.right;
     const height = containerHeight - margin.top - margin.bottom;
+    svg.append("text").attr("id", "title").attr("x", containerWidth / 2).attr("y", margin.top / 2).text("Doping in Professional Bicycle Racing");
+    svg.append("text").attr("id", "subtitle").attr("x", containerWidth / 2).attr("y", margin.top / 2 + 25).text("35 Fastest Times up Alpe d'Huez");
+    svg.append("text").attr("id", "y-axis-label").attr("x", -height / 2 - 60).attr("y", margin.left / 2).attr("transform", "rotate(-90)").text("Time in minutes");
+    function addLegend() {
+        let legend = chart.append("g").attr("id", "legend").attr("transform", `translate(${width - margin.right}, ${100})`);
+        legend.append("rect").attr("class", "legend-rect").attr("x", 0).attr("y", 0).attr("fill", "#ff7f0e");
+        legend.append("text").attr("class", "legend-text").attr("x", -8).attr("y", 12).text("No doping allegations");
+        legend.append("rect").attr("class", "legend-rect").attr("x", 0).attr("y", 25).attr("fill", "#1f77b4");
+        legend.append("text").attr("class", "legend-text").attr("x", -8).attr("y", 37).text("Riders with doping allegations");
+    }
+    addLegend();
+    function addTooltip() {
+        (0, _d3.select)("body").append("div").attr("id", "tooltip").style("opacity", 0);
+    }
+    addTooltip();
     return {
         margin,
         svg,
         chart,
+        graph,
         width,
         height
     };
@@ -23817,7 +23831,12 @@ function addAxes(chart, data, width, height) {
         0,
         width
     ]);
-    const yScale = (0, _d3.scaleTime)().domain((0, _d3.extent)(data, (d)=>parseTimeTime(d.Time))).range([
+    let yExtent = (0, _d3.extent)(data, (d)=>parseTimeTime(d.Time));
+    // yExtent[0] = timeMinute.floor(yExtent[0]);
+    yExtent[1] = (0, _d3.timeMinute).ceil(yExtent[1]);
+    // yExtent[0] = d3.timeMinute.floor(parseTimeTime(yExtent[0]));
+    // yExtent[1] = d3.timeMinute.ceil(parseTimeTime(yExtent[1]));
+    const yScale = (0, _d3.scaleTime)().domain(yExtent).range([
         0,
         height
     ]);
@@ -23826,8 +23845,8 @@ function addAxes(chart, data, width, height) {
     const yAxis = (0, _d3.axisLeft)(yScale).tickFormat((d)=>{
         return formatter(d);
     });
-    chart.append("g").attr("transform", `translate(0, ${height})`).call(xAxis);
-    chart.append("g").call(yAxis);
+    chart.append("g").attr("id", "x-axis").attr("transform", `translate(0, ${height})`).call(xAxis);
+    chart.append("g").attr("id", "y-axis").call(yAxis);
     return {
         xScale,
         yScale,
@@ -23835,7 +23854,33 @@ function addAxes(chart, data, width, height) {
         parseTimeTime
     };
 }
+function plotData(graph, data, xScale, yScale, parseTimeYear, parseTimeTime) {
+    graph.selectAll("circle").data(data).join("circle").attr("class", "dot").attr("data-year", (d)=>d.Year).attr("data-time", (d)=>d.Time).attr("data-xvalue", (d)=>d.Year).attr("data-yvalue", (d)=>{
+        let [minutes, seconds] = d.Time.split(":").map(Number);
+        return new Date(0, 0, 0, 0, minutes, seconds);
+    }).attr("data-name", (d)=>d.Name).attr("data-nationality", (d)=>d.Nationality).attr("data-doping", (d)=>d.Doping).attr("cx", (d)=>xScale(parseTimeYear(d.Year))).attr("cy", (d)=>yScale(parseTimeTime(d.Time))).attr("r", 7).attr("stroke", "black").attr("fill", (d)=>{
+        if (d.Doping !== "") return "#1f77b4";
+        return "#ff7f0e";
+    }).on("mouseover", function(e) {
+        let tooltip = (0, _d3.select)("#tooltip");
+        tooltip.transition().duration(200).style("opacity", 1).style("top", (0, _d3.select)(this).attr("cy") - 10 + "px").style("left", (0, _d3.select)(this).attr("cx") + "px").attr("data-year", (0, _d3.select)(this).attr("data-year"));
+        let d = e.target.dataset;
+        let name = d.name;
+        let nationality = d.nationality;
+        let year = d.year;
+        let time = d.time;
+        let doping = d.doping;
+        tooltip.html(`<div>
+			<p>${name}: ${nationality}</p>
+			<p>Year: ${year}, Time: ${time}</p>
+			<br>
+			<p>${doping ? doping : "No doping allegations on record"}</p></div>`);
+    }).on("mouseout", function(e) {
+        let tooltip = (0, _d3.select)("#tooltip");
+        tooltip.transition().duration(200).style("opacity", 0);
+    });
+}
 
-},{"d3":"17XFv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["g5G0b","bB7Pu"], "bB7Pu", "parcelRequire2bc7")
+},{"d3":"17XFv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["dB9nQ","bB7Pu"], "bB7Pu", "parcelRequire2bc7")
 
 //# sourceMappingURL=index.3d214d75.js.map

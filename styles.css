@@ -1,8 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 *, *:before, *:after {
     margin:0;
     box-sizing: border-box;
 }
 
+body {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.dot {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.dot:hover {
+    fill: aqua;
+    r: 15px;
+}
+
+
+
+#title, #subtitle {
+    text-anchor: middle;
+}
+
+#title {
+    font-weight: 200;
+    font-size: 32px;
+}
+
+#subtitle {
+    font-size: 18px;
+}
+
 svg {
     border: 2px solid black;
+    position: relative;
+}
+
+.legend-rect {
+    width: 18px;
+    height: 18px;
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.legend-text {
+    font-size: 12px;
+    text-anchor: end;
+}
+
+#tooltip {
+    font-size: 12px;
+    position: absolute;
+    border: 2px solid black;
+    border-radius: 10px;
+    background: white;
+    padding: 10px;
+    pointer-events: none;
 }
