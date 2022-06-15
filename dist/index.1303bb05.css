@@ -1,0 +1,10 @@
+*, :before, :after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+svg {
+  border: 2px solid #000;
+}
+
+/*# sourceMappingURL=index.1303bb05.css.map */

@@ -1,0 +1,8 @@
+*, *:before, *:after {
+    margin:0;
+    box-sizing: border-box;
+}
+
+svg {
+    border: 2px solid black;
+}
